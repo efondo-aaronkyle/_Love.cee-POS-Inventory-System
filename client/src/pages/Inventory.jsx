@@ -3,6 +3,7 @@ import HeaderCard from "@/components/HeaderCard"
 import InventoryTable from "@/components/InventoryTable"
 import AddProductDialog from "@/components/AddProductDialog"
 import SuccessAlert from "@/components/SuccessAlert"
+import AlertDestructive from "@/components/AlertDestructive"
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from "@/services/productService"
 
 export default function Inventory() {
@@ -22,8 +23,8 @@ export default function Inventory() {
     }
   }
 
-  const showAlert = (title, message) => {
-    setAlert({ title, message })
+  const showAlert = (type, title, message) => {
+    setAlert({ type, title, message })
 
     setTimeout(() => {
       setAlert(null)
@@ -35,6 +36,7 @@ export default function Inventory() {
       await createProduct(newProduct)
 
       showAlert(
+        "success",
         "Product Added",
         `${newProduct.name} was added successfully.`
       )
@@ -42,16 +44,21 @@ export default function Inventory() {
       loadProducts() // refresh from DB
     } catch (err) {
       console.error(err)
+      showAlert(
+        "error",
+        "Add Failed",
+        err.response?.data?.message || "Unable to add product"
+      )
     }
   }
 
   const handleDelete = async (id) => {
     try {
       const deleted = products.find(p => p.id === id)
-
       await deleteProduct(id)
 
       showAlert(
+        "success",
         "Product Deleted",
         `${deleted.name} was removed from inventory.`
       )
@@ -59,6 +66,7 @@ export default function Inventory() {
       loadProducts()
     } catch (err) {
       showAlert(
+        "error",
         "Delete Failed",
         err.response?.data?.message || "Unable to delete product"
       )
@@ -71,6 +79,7 @@ export default function Inventory() {
       await updateProduct(updatedProduct.id, updatedProduct)
 
       showAlert(
+        "success",
         "Product Updated",
         `${updatedProduct.name} was updated successfully.`
       )
@@ -78,44 +87,69 @@ export default function Inventory() {
       loadProducts()
     } catch (err) {
       console.error(err)
+      showAlert(
+        "error",
+        "Update Failed",
+        err.response?.data?.message || "Unable to update product."
+      )
     }
   }
 
 
   return (
-    <div className="flex flex-col p-4 bg-[#f4f0e5] min-h-screen font-[poppins] relative">
-      {alert && (
-        <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-2">
-          <SuccessAlert
-            title={alert.title}
-            message={alert.message}
+    <div className="flex flex-col bg-[#f4f0e5] min-h-screen font-[poppins]">
+      <div className="flex-1 items-center justify-center p-4">
+        {alert && (
+          <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-2">
+            {alert.type === "success" ? (
+              <SuccessAlert
+                title={alert.title}
+                message={alert.message}
+              />
+            ) : (
+              <AlertDestructive
+                title={alert.title}
+                message={alert.message}
+              />
+            )}
+          </div>
+        )}
+      
+        {/* HEADER */}
+        <div className="max-w-6xl w-full mx-auto mb-6">
+          <HeaderCard
+            title="Inventory"
+            description="Manage your product's stock levels with full control."
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-full h-full">
+                <path d="M3.75 3A1.75 1.75 0 0 0 2 4.75v3.26a3.235 3.235 0 0 1 1.75-.51h12.5c.644 0 1.245.188 1.75.51V6.75A1.75 1.75 0 0 0 16.25 5h-4.836a.25.25 0 0 1-.177-.073L9.823 3.513A1.75 1.75 0 0 0 8.586 3H3.75ZM3.75 9A1.75 1.75 0 0 0 2 10.75v4.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0 0 18 15.25v-4.5A1.75 1.75 0 0 0 16.25 9H3.75Z" />
+              </svg>
+            }
           />
         </div>
-      )}
-    
-      {/* HEADER */}
-      <div className="max-w-6xl w-full mx-auto mb-6">
-        <HeaderCard
-          title="Inventory"
-          description="Manage your product's stock levels with full control."
-          icon={
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-full h-full">
-              <path d="M3.75 3A1.75 1.75 0 0 0 2 4.75v3.26a3.235 3.235 0 0 1 1.75-.51h12.5c.644 0 1.245.188 1.75.51V6.75A1.75 1.75 0 0 0 16.25 5h-4.836a.25.25 0 0 1-.177-.073L9.823 3.513A1.75 1.75 0 0 0 8.586 3H3.75ZM3.75 9A1.75 1.75 0 0 0 2 10.75v4.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0 0 18 15.25v-4.5A1.75 1.75 0 0 0 16.25 9H3.75Z" />
-            </svg>
-          }
-        />
-      </div>
-      {/* CONTENT */}
-      <div className="max-w-6xl w-full mx-auto bg-white rounded-xl shadow-lg p-4">
+        {/* CONTENT */}
+        <div className="max-w-6xl w-full mx-auto bg-white rounded-xl shadow-lg p-4">
 
-        {/* ADD PRODUCT BUTTON */}
-        <div className="flex justify-end mb-4">
-          <AddProductDialog onAdd={handleAdd}/>
+          {/* ADD PRODUCT BUTTON */}
+          <div className="flex justify-end mb-4">
+            <AddProductDialog onAdd={handleAdd}/>
+          </div>
+
+          {/* TABLE */}
+          <InventoryTable products={products} onDelete={handleDelete} onUpdate={handleUpdate} />
         </div>
-
-        {/* TABLE */}
-        <InventoryTable products={products} onDelete={handleDelete} onUpdate={handleUpdate} />
       </div>
+      <footer className="w-full py-4 text-center text-sm text-white border-t-2 bg-[#9d1a1f] border-[#9d1a1f]">
+        © {new Date().getFullYear()} • Built by{" "}
+        <a
+          href="https://github.com/efondo-aaronkyle"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold hover:underline"
+        >
+          efondo-aaronkyle
+        </a>
+      </footer>
     </div>
   )
 }

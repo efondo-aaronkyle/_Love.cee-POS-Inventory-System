@@ -10,10 +10,6 @@ export default function ProductCard({ product, onAdd }) {
 
       <CardContent className="p-4 flex flex-col gap-3">
 
-        <div className="h-24 bg-[#caa272]/20 rounded-lg flex items-center justify-center text-gray-500">
-          Image
-        </div>
-
         <h3 className="font-semibold text-md">
           {product.name}
         </h3>
@@ -27,7 +23,7 @@ export default function ProductCard({ product, onAdd }) {
           min={1}
           value={qty}
           onChange={(e) => setQty(Number(e.target.value))}
-          className="w-full text-center rounded-xl border border-gray-300"
+          className="w-full text-center rounded-xl border focus:ring-[#9d1a1f] border-[#9d1a1f]/20"
           placeholder="Qty"
         />
 

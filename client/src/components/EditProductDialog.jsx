@@ -60,6 +60,7 @@ export default function EditProductDialog({ product, onUpdate }) {
                     name="name"
                     value={form.name}
                     onChange={handleChange}
+                    className="focus:ring-[#9d1a1f] border border-[#9d1a1f]/20"
                 />
                 </Field>
 
@@ -70,6 +71,7 @@ export default function EditProductDialog({ product, onUpdate }) {
                     name="price"
                     value={form.price}
                     onChange={handleChange}
+                    className="focus:ring-[#9d1a1f] border border-[#9d1a1f]/20"
                 />
                 </Field>
 
@@ -80,6 +82,7 @@ export default function EditProductDialog({ product, onUpdate }) {
                     name="stock"
                     value={form.stock}
                     onChange={handleChange}
+                    className="focus:ring-[#9d1a1f] border border-[#9d1a1f]/20"
                 />
                 </Field>
 
