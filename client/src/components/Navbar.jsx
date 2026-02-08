@@ -15,7 +15,7 @@ export default function Navbar({ page, setPage }) {
           alt="Love Cee Logo"
           className="w-15 h-15 object-contain drop-shadow-sm"
         />
-        <h1 className="text-xl font-bold tracking-wide">Love, Cee</h1>
+        <h1 className="text-2xl font-bold tracking-wide">Love, Cee</h1>
       </div>
       
 
