@@ -2,42 +2,46 @@ import db from "../config/db.js"
 
 export const getDashboardStats = async (req, res) => {
   const { date } = req.query
-  const selectedDate = date || new Date().toISOString().slice(0, 10)
+
+  let where = ""
+  const params = []
+
+  if (date) {
+    where = "WHERE order_date = ?"
+    params.push(date)
+  }
 
   try {
     const [[summary]] = await db.query(
       `
-      SELECT 
-        COUNT(*) AS totalOrders,
-        IFNULL(SUM(total), 0) AS totalRevenue
+      SELECT COUNT(*) AS totalOrders,
+             IFNULL(SUM(total), 0) AS totalRevenue
       FROM orders
-      WHERE order_date = ?
+      ${where}
       `,
-      [selectedDate]
+      params
     )
 
     const [[topProduct]] = await db.query(
       `
-      SELECT 
-        p.name,
-        SUM(oi.quantity) AS totalSold
+      SELECT p.name, SUM(oi.quantity) AS totalSold
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
       JOIN orders o ON oi.order_id = o.id
-      WHERE o.order_date = ?
+      ${where}
       GROUP BY p.id
       ORDER BY totalSold DESC
       LIMIT 1
       `,
-      [selectedDate]
+      params
     )
 
     res.json({
       totalOrders: summary.totalOrders,
       totalRevenue: summary.totalRevenue,
-      topProduct: topProduct ? topProduct.name : "N/A"
+      topProduct: topProduct?.name || "N/A"
     })
-  } catch (error) {
+  } catch (err) {
     console.error(err)
     res.status(500).json({ message: "Failed to fetch dashboard stats" })
   }

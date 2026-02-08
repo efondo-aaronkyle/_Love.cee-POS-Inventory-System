@@ -13,21 +13,18 @@ export default function DateFilter({ dates, onChange }) {
                     <SelectLabel className="text-[#9d1a1f]">
                         Order Dates
                     </SelectLabel>
-                    {dates.length === 0 ? (
-                        <SelectItem value="none" disabled>
-                        No orders yet
-                        </SelectItem>
-                    ) : (
-                        dates.map(date => (
+                    <SelectItem value="all">
+                        All Dates
+                    </SelectItem>
+                    {dates.map(date => (
                         <SelectItem key={date} value={date}>
-                            {new Date(date).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric"
-                            })}
+                        {new Date(date).toLocaleDateString("en-PH", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric"
+                        })}
                         </SelectItem>
-                        ))
-                    )}
+                    ))}
                 </SelectGroup>
             </SelectContent>
         </Select>

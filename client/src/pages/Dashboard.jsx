@@ -32,8 +32,7 @@ export default function Dashboard() {
 
       // 2. Fetch available order dates
       const datesRes = await fetchOrderDates()
-      const normalizedDates = datesRes.data.map(d => new Date(d).toISOString().slice(0,10))
-      setOrderDates(normalizedDates)
+      setOrderDates(datesRes.data)
 
       // Load orders initially (all orders)
       loadOrders()
@@ -44,18 +43,28 @@ export default function Dashboard() {
 
   const loadOrders = async () => {
     try {
-      let ordersRes
-      if (selectedDate) {
-        ordersRes = await fetchOrdersByDate(selectedDate, page)
-      } else {
-        ordersRes = await fetchOrdersByDate(null, page) // backend should return all orders if date is null
-      }
-      setOrders(ordersRes.data)
-      setTotalPages(1)
+      const formattedDate = selectedDate
+        ? selectedDate.slice(0, 10) // YYYY-MM-DD
+        : null
+
+      const res = await fetchOrdersByDate(formattedDate, page)
+      setOrders(res.data.orders)
+      setTotalPages(res.data.totalPages)
     } catch (err) {
       console.error(err)
     }
   }
+
+  const handleFilter = (date) => {
+    setPage(1)
+
+    if (date === "all") {
+      setSelectedDate(null)
+    } else {
+      setSelectedDate(date)
+    }
+  }
+
 
   return (
     <div className="flex flex-col p-4 bg-[#f4f0e5] min-h-screen font-[poppins]">
@@ -86,7 +95,7 @@ export default function Dashboard() {
           totalPages={totalPages}
           currentPage={page}
           onPageChange={setPage}
-          onFilter={setSelectedDate}
+          onFilter={handleFilter}
           dates={orderDates}
         />
       </div>

@@ -11,7 +11,8 @@ export default function OrderHistoryCard({ order }) {
             Order #{order.id}
           </h3>
           <span className="text-sm text-gray-500">
-            {new Date(order.created_at || order.date).toLocaleString("en-US", {
+            {new Date(order.created_at || order.date).toLocaleString("en-PH", {
+              timeZone: "Asia/Manila",
               month: "short",
               day: "numeric",
               year: "numeric",
