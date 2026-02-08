@@ -3,6 +3,7 @@ import HeaderCard from "@/components/HeaderCard"
 import InventoryTable from "@/components/InventoryTable"
 import AddProductDialog from "@/components/AddProductDialog"
 import SuccessAlert from "@/components/SuccessAlert"
+import AlertDestructive from "@/components/AlertDestructive"
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from "@/services/productService"
 
 export default function Inventory() {
@@ -22,8 +23,8 @@ export default function Inventory() {
     }
   }
 
-  const showAlert = (title, message) => {
-    setAlert({ title, message })
+  const showAlert = (type, title, message) => {
+    setAlert({ type, title, message })
 
     setTimeout(() => {
       setAlert(null)
@@ -35,6 +36,7 @@ export default function Inventory() {
       await createProduct(newProduct)
 
       showAlert(
+        "success",
         "Product Added",
         `${newProduct.name} was added successfully.`
       )
@@ -42,16 +44,21 @@ export default function Inventory() {
       loadProducts() // refresh from DB
     } catch (err) {
       console.error(err)
+      showAlert(
+        "error",
+        "Add Failed",
+        err.response?.data?.message || "Unable to add product"
+      )
     }
   }
 
   const handleDelete = async (id) => {
     try {
       const deleted = products.find(p => p.id === id)
-
       await deleteProduct(id)
 
       showAlert(
+        "success",
         "Product Deleted",
         `${deleted.name} was removed from inventory.`
       )
@@ -59,6 +66,7 @@ export default function Inventory() {
       loadProducts()
     } catch (err) {
       showAlert(
+        "error",
         "Delete Failed",
         err.response?.data?.message || "Unable to delete product"
       )
@@ -71,6 +79,7 @@ export default function Inventory() {
       await updateProduct(updatedProduct.id, updatedProduct)
 
       showAlert(
+        "success",
         "Product Updated",
         `${updatedProduct.name} was updated successfully.`
       )
@@ -78,6 +87,11 @@ export default function Inventory() {
       loadProducts()
     } catch (err) {
       console.error(err)
+      showAlert(
+        "error",
+        "Update Failed",
+        err.response?.data?.message || "Unable to update product."
+      )
     }
   }
 
@@ -86,10 +100,17 @@ export default function Inventory() {
     <div className="flex flex-col p-4 bg-[#f4f0e5] min-h-screen font-[poppins] relative">
       {alert && (
         <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-2">
-          <SuccessAlert
-            title={alert.title}
-            message={alert.message}
-          />
+          {alert.type === "success" ? (
+            <SuccessAlert
+              title={alert.title}
+              message={alert.message}
+            />
+          ) : (
+            <AlertDestructive
+              title={alert.title}
+              message={alert.message}
+            />
+          )}
         </div>
       )}
     
