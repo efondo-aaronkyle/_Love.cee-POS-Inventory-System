@@ -1,10 +1,10 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export default function DateFilter({ onChange }) {
+export default function DateFilter({ dates, onChange }) {
     return (
         <Select onValueChange={onChange}> 
             <SelectTrigger className="w-full max-w-56 bg-white border border-[#9d1a1f]/20 shadow-sm rounded-xl focus:ring-[#9d1a1f]">
-            <SelectValue placeholder="Filter by date" />
+                <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
 
             <SelectContent className="bg-white border border-[#9d1a1f]/20">
@@ -13,15 +13,21 @@ export default function DateFilter({ onChange }) {
                     <SelectLabel className="text-[#9d1a1f]">
                         Order Dates
                     </SelectLabel>
-                    <SelectItem value="July 12, 2026">
-                        July 12, 2026
-                    </SelectItem>
-                    <SelectItem value="July 11, 2026">
-                        July 11, 2026
-                    </SelectItem>
-                    <SelectItem value="July 10, 2026">
-                        July 10, 2026
-                    </SelectItem>
+                    {dates.length === 0 ? (
+                        <SelectItem value="none" disabled>
+                        No orders yet
+                        </SelectItem>
+                    ) : (
+                        dates.map(date => (
+                        <SelectItem key={date} value={date}>
+                            {new Date(date).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric"
+                            })}
+                        </SelectItem>
+                        ))
+                    )}
                 </SelectGroup>
             </SelectContent>
         </Select>

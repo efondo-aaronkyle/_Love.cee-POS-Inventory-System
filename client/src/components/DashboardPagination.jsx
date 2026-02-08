@@ -1,39 +1,25 @@
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 
-export default function DashboardPagination() {
+export default function DashboardPagination({ page, totalPages, onChange }) {
   return (
     <Pagination>
-
       <PaginationContent>
-
         <PaginationItem>
-          <PaginationPrevious href="#" />
+          <PaginationPrevious onClick={() => onChange(Math.max(1, page - 1))} />
         </PaginationItem>
 
-        <PaginationItem>
-          <PaginationLink href="#">1</PaginationLink>
-        </PaginationItem>
+        {[...Array(totalPages)].map((_, i) => (
+          <PaginationItem key={i}>
+            <PaginationLink isActive={page === i + 1} onClick={() => onChange(i + 1)}>
+              {i + 1}
+            </PaginationLink>
+          </PaginationItem>
+        ))}
 
         <PaginationItem>
-          <PaginationLink href="#" isActive>
-            2
-          </PaginationLink>
+          <PaginationNext onClick={() => onChange(Math.min(totalPages, page + 1))}/>
         </PaginationItem>
-
-        <PaginationItem>
-          <PaginationLink href="#">3</PaginationLink>
-        </PaginationItem>
-
-        <PaginationItem>
-          <PaginationEllipsis />
-        </PaginationItem>
-
-        <PaginationItem>
-          <PaginationNext href="#" />
-        </PaginationItem>
-
       </PaginationContent>
-
     </Pagination>
   )
 }
