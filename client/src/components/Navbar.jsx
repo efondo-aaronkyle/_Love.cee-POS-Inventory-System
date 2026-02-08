@@ -58,9 +58,7 @@ export default function Navbar({ page, setPage, setIsLoggedIn }) {
               </NavigationMenuLink>
 
               <NavigationMenuLink
-                className={`block px-4 py-2 rounded-lg cursor-pointer text-[#9d1a1f] transition hover:bg-[#f4f0e5] ${
-                  page === "inventory" && "bg-[#f4f0e5] font-bold"
-                }`}
+                className="block px-4 py-2 rounded-lg cursor-pointer text-[#9d1a1f] transition hover:bg-[#f4f0e5]"
                 onClick={() => setIsLoggedIn(false)}
               >
                 Logout
