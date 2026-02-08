@@ -4,33 +4,65 @@ import db from "../config/db.js"
 
 export const createOrder = async (req, res) => {
   const { items, total } = req.body
+  const conn = await db.getConnection()
 
   try {
-    // 1. Create order
-    const orderId = await Order.create(total)
+    await conn.beginTransaction()
 
-    // 2. Create order items + update stock
+    // 1. Check stock for each item
     for (const item of items) {
-      await OrderItem.create(
-        orderId,
-        item.productId,
-        item.quantity,
-        item.price
+      const [[product]] = await conn.query(
+        "SELECT stock, name FROM products WHERE id = ? FOR UPDATE",
+        [item.productId]
       )
 
-      await db.query(
+      if (!product) {
+        throw new Error("Product not found")
+      }
+
+      if (product.stock < item.quantity) {
+        await conn.rollback()
+        return res.status(400).json({
+          message: `Insufficient stock for ${product.name}`
+        })
+      }
+    }
+
+    // 2. Create order
+    const [orderResult] = await conn.query(
+      "INSERT INTO orders (total, order_date) VALUES (?, CURDATE())",
+      [total]
+    )
+    const orderId = orderResult.insertId
+
+    // 3. Create order items + deduct stock
+    for (const item of items) {
+      await conn.query(
+        `INSERT INTO order_items (order_id, product_id, quantity, price)
+         VALUES (?, ?, ?, ?)`,
+        [orderId, item.productId, item.quantity, item.price]
+      )
+
+      await conn.query(
         "UPDATE products SET stock = stock - ? WHERE id = ?",
         [item.quantity, item.productId]
       )
     }
+
+    await conn.commit()
 
     res.status(201).json({
       message: "Order created successfully",
       orderId
     })
   } catch (error) {
+    await conn.rollback()
     console.error(error)
-    res.status(500).json({ message: "Failed to create order" })
+    res.status(500).json({
+      message: error.message || "Failed to create order"
+    })
+  } finally {
+    conn.release()
   }
 }
 

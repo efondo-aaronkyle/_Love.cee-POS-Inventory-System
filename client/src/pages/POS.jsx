@@ -5,6 +5,7 @@ import CheckoutDialog from "@/components/CheckoutDialog"
 import HeaderCard from "@/components/HeaderCard"
 import OrderSummary from "@/components/OrderSummary"
 import SuccessAlert from "@/components/SuccessAlert"
+import AlertDestructive from "@/components/AlertDestructive"
 
 export default function POS() {
   const [products, setProducts] = useState([])
@@ -24,8 +25,8 @@ export default function POS() {
     getProducts()
   }, [])
   
-  const showAlert = (title, message) => {
-    setAlert({ title, message })
+  const showAlert = (type, title, message) => {
+    setAlert({ type, title, message })
     setTimeout(() => setAlert(null), 2500)
   }
 
@@ -55,7 +56,7 @@ export default function POS() {
       // POST to backend
       const res = await createOrder({ items, total })
 
-      showAlert("Order Completed", `Order #${res.data.orderId} was successful.`)
+      showAlert("success", "Order Completed", `Order #${res.data.orderId} was successful.`)
       setCart([])
       setOpen(false)
 
@@ -64,8 +65,11 @@ export default function POS() {
       setProducts(refreshed.data)
 
     } catch (err) {
-      console.error(err)
-      showAlert("Checkout Failed", "Something went wrong while creating the order.")
+        const msg =
+          err.response?.data?.message ||
+          "Insufficient stock or server error."
+
+        showAlert("error", "Checkout Failed", msg)
     }
   }
 
@@ -73,10 +77,17 @@ export default function POS() {
     <div className="flex flex-col p-4 bg-[#f4f0e5] min-h-screen font-[poppins]">
       {alert && (
         <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-2">
-          <SuccessAlert
-            title={alert.title}
-            message={alert.message}
-          />
+          {alert.type === "success" ? (
+            <SuccessAlert
+              title={alert.title}
+              message={alert.message}
+            />
+          ) : (
+            <AlertDestructive
+              title={alert.title}
+              message={alert.message}
+            />
+          )}
         </div>
       )}
 
