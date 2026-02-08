@@ -10,10 +10,6 @@ export default function ProductCard({ product, onAdd }) {
 
       <CardContent className="p-4 flex flex-col gap-3">
 
-        <div className="h-24 bg-[#caa272]/20 rounded-lg flex items-center justify-center text-gray-500">
-          Image
-        </div>
-
         <h3 className="font-semibold text-md">
           {product.name}
         </h3>
