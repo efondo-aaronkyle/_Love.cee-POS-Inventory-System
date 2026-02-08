@@ -27,7 +27,7 @@ export default function ProductCard({ product, onAdd }) {
           min={1}
           value={qty}
           onChange={(e) => setQty(Number(e.target.value))}
-          className="w-full text-center rounded-xl border border-gray-300"
+          className="w-full text-center rounded-xl border focus:ring-[#9d1a1f] border-[#9d1a1f]/20"
           placeholder="Qty"
         />
 

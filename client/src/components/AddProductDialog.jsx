@@ -50,7 +50,7 @@ export default function AddProductDialog({ onAdd }) {
 
             <Field>
               <Label className="text-sm font-semibold">Name</Label>
-              <Input name="name" value={form.name} onChange={handleChange} />
+              <Input name="name" className="focus:ring-[#9d1a1f] border border-[#9d1a1f]/20" value={form.name} onChange={handleChange} />
             </Field>
 
             <Field>
@@ -60,6 +60,7 @@ export default function AddProductDialog({ onAdd }) {
                 name="price"
                 value={form.price}
                 onChange={handleChange}
+                className="focus:ring-[#9d1a1f] border border-[#9d1a1f]/20"
               />
             </Field>
 
@@ -70,6 +71,7 @@ export default function AddProductDialog({ onAdd }) {
                 name="stock"
                 value={form.stock}
                 onChange={handleChange}
+                className="focus:ring-[#9d1a1f] border border-[#9d1a1f]/20"
               />
             </Field>
 
