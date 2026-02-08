@@ -1,18 +1,26 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import HeaderCard from "@/components/HeaderCard"
 import InventoryTable from "@/components/InventoryTable"
 import AddProductDialog from "@/components/AddProductDialog"
 import SuccessAlert from "@/components/SuccessAlert"
-
-const initialProducts = [
-  { id: 1, name: "Red Velvet (Regular)", price: 75, stock: 20 },
-  { id: 2, name: "Classic (Regular)", price: 60, stock: 15 },
-  { id: 3, name: "Original Cheesecake", price: 249, stock: 8 },
-]
+import { fetchProducts, createProduct, updateProduct, deleteProduct } from "@/services/productService"
 
 export default function Inventory() {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState([])
   const [alert, setAlert] = useState(null)
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const loadProducts = async () => {
+    try {
+      const res = await fetchProducts()
+      setProducts(res.data)
+    } catch (err) {
+      console.error("Failed to load products", err)
+    }
+  }
 
   const showAlert = (title, message) => {
     setAlert({ title, message })
@@ -22,40 +30,57 @@ export default function Inventory() {
     }, 2500) // auto hide
   }
 
-  // ADD
-  const handleAdd = (newProduct) => {
-    setProducts(prev => [...prev, newProduct])
+  const handleAdd = async (newProduct) => {
+    try {
+      await createProduct(newProduct)
 
-    showAlert(
-      "Product Added",
-      `${newProduct.name} was added successfully.`
-    )
-  }
-
-  // DELETE
-  const handleDelete = (id) => {
-    const deleted = products.find(p => p.id === id)
-    setProducts(prev => prev.filter(p => p.id !== id))
-
-    showAlert(
-      "Product Deleted",
-      `${deleted.name} was removed from inventory.`
-    )
-  }
-
-  // EDIT
-  const handleUpdate = (updatedProduct) => {
-    setProducts(prev =>
-      prev.map(p =>
-        p.id === updatedProduct.id ? updatedProduct : p
+      showAlert(
+        "Product Added",
+        `${newProduct.name} was added successfully.`
       )
-    )
 
-    showAlert(
-      "Product Updated",
-      `${updatedProduct.name} was updated successfully.`
-    )
+      loadProducts() // refresh from DB
+    } catch (err) {
+      console.error(err)
+    }
   }
+
+  const handleDelete = async (id) => {
+    try {
+      const deleted = products.find(p => p.id === id)
+
+      await deleteProduct(id)
+
+      showAlert(
+        "Product Deleted",
+        `${deleted.name} was removed from inventory.`
+      )
+
+      loadProducts()
+    } catch (err) {
+      showAlert(
+        "Delete Failed",
+        err.response?.data?.message || "Unable to delete product"
+      )
+    }
+  }
+
+
+  const handleUpdate = async (updatedProduct) => {
+    try {
+      await updateProduct(updatedProduct.id, updatedProduct)
+
+      showAlert(
+        "Product Updated",
+        `${updatedProduct.name} was updated successfully.`
+      )
+
+      loadProducts()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
 
   return (
     <div className="flex flex-col p-4 bg-[#f4f0e5] min-h-screen font-[poppins] relative">

@@ -19,7 +19,6 @@ export default function AddProductDialog({ onAdd }) {
 
   const handleSubmit = () => {
     onAdd({
-      id: Date.now(),
       name: form.name,
       price: Number(form.price),
       stock: Number(form.stock),
