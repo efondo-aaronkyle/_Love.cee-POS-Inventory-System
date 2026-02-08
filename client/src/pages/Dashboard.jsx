@@ -1,41 +1,61 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import HeaderCard from "@/components/HeaderCard"
 import DashboardStatsCard from "@/components/DashboardStatsCard"
 import OrderHistorySection from "@/components/OrderHistorySection"
-
-const stats = [
-  { title: "Total Orders", value: 24 },
-  { title: "Total Revenue", value: "₱4,580" },
-  { title: "Top Product", value: "Red Velvet (Regular)" },
-]
-
-const orderHistory = [
-  {
-    id: 1,
-    items: ["Red Velvet (Regular) x2", "Classic (Mini) x1"],
-    total: 195,
-    date: "July 12, 2026"
-  },
-  {
-    id: 2,
-    items: ["Original Cheesecake x1"],
-    total: 249,
-    date: "July 12, 2026"
-  },
-  {
-    id: 3,
-    items: ["Classic (Regular) x3"],
-    total: 180,
-    date: "July 11, 2026"
-  },
-]
+import { fetchDashboardStats, fetchOrdersByDate, fetchOrderDates } from "@/services/productService"
 
 export default function Dashboard() {
+  const [stats, setStats] = useState([])
+  const [orders, setOrders] = useState([])
+  const [totalPages, setTotalPages] = useState(1)
+  const [page, setPage] = useState(1)
   const [selectedDate, setSelectedDate] = useState(null)
+  const [orderDates, setOrderDates] = useState([])
 
-  const filteredOrders = selectedDate
-    ? orderHistory.filter(order => order.date === selectedDate)
-    : orderHistory
+  useEffect(() => {
+    loadDashboard()
+  }, [])
+
+  useEffect(() => {
+    loadOrders()
+  }, [selectedDate, page])
+
+  const loadDashboard = async () => {
+    try {
+      // 1. Fetch all-time stats
+      const statsRes = await fetchDashboardStats(null) // pass null or special route
+      setStats([
+        { title: "Total Orders", value: statsRes.data.totalOrders || 0 },
+        { title: "Total Revenue", value: `₱${statsRes.data.totalRevenue || 0}` },
+        { title: "Top Product", value: statsRes.data.topProduct || "N/A" }
+      ])
+
+      // 2. Fetch available order dates
+      const datesRes = await fetchOrderDates()
+      const normalizedDates = datesRes.data.map(d => new Date(d).toISOString().slice(0,10))
+      setOrderDates(normalizedDates)
+
+      // Load orders initially (all orders)
+      loadOrders()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const loadOrders = async () => {
+    try {
+      let ordersRes
+      if (selectedDate) {
+        ordersRes = await fetchOrdersByDate(selectedDate, page)
+      } else {
+        ordersRes = await fetchOrdersByDate(null, page) // backend should return all orders if date is null
+      }
+      setOrders(ordersRes.data)
+      setTotalPages(1)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   return (
     <div className="flex flex-col p-4 bg-[#f4f0e5] min-h-screen font-[poppins]">
@@ -56,18 +76,18 @@ export default function Dashboard() {
       {/* TOP STATS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto w-full mb-6">
         {stats.map((stat, i) => (
-          <DashboardStatsCard
-            key={i}
-            title={stat.title}
-            value={stat.value}
-          />
+          <DashboardStatsCard key={i} title={stat.title} value={stat.value} />
         ))}
       </div>
       
       <div className="max-w-6xl mx-auto w-full mb-6">
         <OrderHistorySection
-          orders={filteredOrders}
+          orders={orders}
+          totalPages={totalPages}
+          currentPage={page}
+          onPageChange={setPage}
           onFilter={setSelectedDate}
+          dates={orderDates}
         />
       </div>
     </div>

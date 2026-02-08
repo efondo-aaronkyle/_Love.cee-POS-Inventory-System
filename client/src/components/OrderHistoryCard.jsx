@@ -11,7 +11,14 @@ export default function OrderHistoryCard({ order }) {
             Order #{order.id}
           </h3>
           <span className="text-sm text-gray-500">
-            {order.date}
+            {new Date(order.created_at || order.date).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true
+            })}
           </span>
         </div>
 

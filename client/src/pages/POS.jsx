@@ -1,45 +1,40 @@
-import { useState } from "react"
-
+import { useState, useEffect } from "react"
+import { fetchProducts, createOrder } from "@/services/productService"
 import ProductCard from "@/components/ProductCard"
 import CheckoutDialog from "@/components/CheckoutDialog"
 import HeaderCard from "@/components/HeaderCard"
 import OrderSummary from "@/components/OrderSummary"
 import SuccessAlert from "@/components/SuccessAlert"
 
-const products = [
-  { id: 1, name: "Red Velvet (Regular)", price: 75 },
-  { id: 2, name: "Red Velvet (Mini)", price: 45 },
-  { id: 3, name: "Classic (Regular)", price: 60 },
-  { id: 4, name: "Classic (Mini)", price: 35 },
-  { id: 5, name: "Smores (Regular)", price: 70 },
-  { id: 6, name: "Smores (Mini)", price: 40 },
-  { id: 7, name: "Original Cheesecake", price: 249 },
-  { id: 8, name: "Blueberry Cheesecake", price: 289 },
-  { id: 9, name: "Strawberry Cheesecake", price: 289 },
-]
-
 export default function POS() {
+  const [products, setProducts] = useState([])
   const [cart, setCart] = useState([])
   const [open, setOpen] = useState(false)
   const [alert, setAlert] = useState(null)
 
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const res = await fetchProducts()
+        setProducts(res.data)
+      } catch (err) {
+        console.error("Failed to fetch products", err)
+      }
+    }
+    getProducts()
+  }, [])
+  
   const showAlert = (title, message) => {
     setAlert({ title, message })
-
-    setTimeout(() => {
-      setAlert(null)
-    }, 2500)
+    setTimeout(() => setAlert(null), 2500)
   }
 
   const addToCart = (product) => {
     const existing = cart.find(i => i.id === product.id)
-
     if (existing) {
       setCart(
         cart.map(i =>
-          i.id === product.id
-            ? { ...i, qty: i.qty + product.qty }
-            : i
+          i.id === product.id ? { ...i, qty: i.qty + product.qty } : i
         )
       )
     } else {
@@ -47,10 +42,32 @@ export default function POS() {
     }
   }
 
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.qty,
-    0
-  )
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
+
+  const handleCheckout = async () => {
+    try {
+      const items = cart.map(item => ({
+        productId: item.id,
+        quantity: item.qty,
+        price: item.price
+      }))
+
+      // POST to backend
+      const res = await createOrder({ items, total })
+
+      showAlert("Order Completed", `Order #${res.data.orderId} was successful.`)
+      setCart([])
+      setOpen(false)
+
+      // Optionally refresh products to update stock
+      const refreshed = await fetchProducts()
+      setProducts(refreshed.data)
+
+    } catch (err) {
+      console.error(err)
+      showAlert("Checkout Failed", "Something went wrong while creating the order.")
+    }
+  }
 
   return (
     <div className="flex flex-col p-4 bg-[#f4f0e5] min-h-screen font-[poppins]">
@@ -104,14 +121,7 @@ export default function POS() {
         open={open}
         setOpen={setOpen}
         total={total}
-        onConfirm={() => {
-          showAlert(
-            "Order Completed",
-            "Payment was successful and cart has been cleared."
-          )
-          setCart([])
-          setOpen(false)
-        }}
+        onConfirm={handleCheckout}
       />
     </div>
   )
