@@ -1,6 +1,6 @@
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink } from "@/components/ui/navigation-menu"
 
-export default function Navbar({ page, setPage }) {
+export default function Navbar({ page, setPage, setIsLoggedIn }) {
   const currentPage =
     page === "dashboard" ? "Dashboard" :
     page === "pos" ? "POS" :
@@ -55,6 +55,15 @@ export default function Navbar({ page, setPage }) {
                 onClick={() => setPage("inventory")}
               >
                 Inventory
+              </NavigationMenuLink>
+
+              <NavigationMenuLink
+                className={`block px-4 py-2 rounded-lg cursor-pointer text-[#9d1a1f] transition hover:bg-[#f4f0e5] ${
+                  page === "inventory" && "bg-[#f4f0e5] font-bold"
+                }`}
+                onClick={() => setIsLoggedIn(false)}
+              >
+                Logout
               </NavigationMenuLink>
 
             </NavigationMenuContent>
