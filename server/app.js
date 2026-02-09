@@ -20,6 +20,9 @@ app.use(express.json())
 app.use("/api/products", productRoutes)
 app.use("/api/orders", orderRoutes)
 app.use("/api/dashboard", dashboardRoutes)
+app.get("/", (req, res) => {
+  res.send("🚀 Express backend is alive!");
+});
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
